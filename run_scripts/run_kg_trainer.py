@@ -14,16 +14,16 @@ def main():
     """解析命令行参数并启动训练"""
     parser = argparse.ArgumentParser(description="知识图谱抽取的PPO训练")
     
-    parser.add_argument("--config_path", type=str, default="/mnt/afs/tanka/shihao/project/data/kg_extraction/kg_extraction_config.yaml",
+    parser.add_argument("--config_path", type=str, default="/mnt/tanka/chenweiling/Codes/verl/verl/trainer/config/kg_extraction_config.yaml",
                         help="自定义配置文件路径，覆盖默认配置")
     
-    parser.add_argument("--data_path", type=str, default="/mnt/afs/tanka/shihao/data/kg_extraction/kg_extraction_train.jsonl",
+    parser.add_argument("--data_path", type=str, default="/mnt/tanka/chenweiling/Codes/verl/data/kg_extraction/kg_extraction_train.jsonl",
                         help="训练数据路径，覆盖配置文件中的设置")
     
     parser.add_argument("--model_path", type=str, default="/mnt/afs/tanka/shihao/model/Qwen2.5-0.5B-Instruct",
                         help="基础模型路径，覆盖配置文件中的设置")
     
-    parser.add_argument("--output_dir", type=str, default="/mnt/afs/tanka/shihao/outputs/kg_extraction_debug",
+    parser.add_argument("--output_dir", type=str, default="/mnt/tanka/chenweiling/Codes/verl/checkpoints/kg_extraction_debug",
                         help="输出目录，覆盖配置文件中的设置")
     
     parser.add_argument("--debug", action="store_true",
@@ -55,7 +55,7 @@ def main():
     overrides = []
     
     if args.data_path:
-        overrides.append(f"data.train_path={args.data_path}")
+        overrides.append(f"data.train_files={args.data_path}")
     
     if args.model_path:
         overrides.append(f"actor_rollout_ref.model.path={args.model_path}")

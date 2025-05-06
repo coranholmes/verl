@@ -277,7 +277,7 @@ def print_debug_info(config, args):
     
     print("\n实际配置值：")
     try:
-        print(f"训练数据路径: {config.data.train_path}")
+        print(f"训练数据路径: {config.data.train_files}")
         print(f"模型路径: {config.actor_rollout_ref.model.path}")
         print(f"输出目录: {config.trainer.output_dir}")
     except Exception as e:
