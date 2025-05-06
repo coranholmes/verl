@@ -1,0 +1,91 @@
+actor_rollout_ref:
+  model:
+    path: /mnt/afs/tanka/shihao/model/Qwen2.5-0.5B-Instruct
+  
+  actor:
+    strategy: fsdp
+    fsdp_config:
+      reshard_after_forward: true
+      move_params_to_cpu: false
+      state_dict_type: full
+    use_kl_loss: true
+    kl_coef: 0.1
+
+  rollout:
+    mode: sync
+    use_cache: true
+    override_generation_kwargs:
+      max_new_tokens: 1024
+      temperature: 0.8
+      top_p: 0.9
+      do_sample: true
+
+critic:
+  model:
+    path: /mnt/afs/tanka/shihao/model/Qwen2.5-0.5B-Instruct
+  
+  strategy: fsdp
+  fsdp_config:
+    state_dict_type: full
+    reshard_after_forward: true
+    move_params_to_cpu: false
+
+algorithm:
+  name: ppo
+  epochs: 50
+  use_kl_in_reward: true
+  kl_coef: 0.1
+  gamma: 1.0
+  lam: 0.95
+  entropy_coef: 0.0
+
+  ratio_clip: 0.2
+  value_clip: 0.2
+  clip_grad: 1.0
+  vf_coef: 0.5
+
+  lr: 5e-6
+  lr_schedule: constant
+  mini_batch_size: 16
+  batch_size: 128
+  update_epochs: 4
+  target_kl: 0.2
+  norm_adv: true
+  cliprange_reward: 10
+  loss: pg
+
+# 设定自定义奖励函数
+custom_reward_function:
+  path: /mnt/afs/tanka/shihao/project/verl/verl/utils/kg_rewards.py
+  name: compute_kg_extraction_reward
+  reward_kwargs:
+    # 可以在这里添加奖励函数所需的其他参数
+    threshold: 0.5
+
+reward_model:
+  enable: true
+  reward_manager: naive
+  strategy: fsdp
+  reward_kwargs:
+    sft_ref_scale: 0.0
+
+data:
+  train_path: ./data/kg_extraction/kg_extraction_train.jsonl
+  val_path: ./data/kg_extraction/kg_extraction_val.jsonl
+  include_reward_computation_in_dataset: false
+  reward_fn_key: data_source
+  trust_remote_code: true
+
+trainer:
+  nnodes: 1
+  n_gpus_per_node: 2
+  batch_log_interval: 1
+  eval_interval: 1
+  total_episodes: 1000
+  profile_gpu_memory: false
+  checkpoint_interval: 2
+  eval_episodes: 10
+  output_dir: ./outputs/kg_extraction
+
+ray_init:
+  num_cpus: 32
